@@ -17,11 +17,11 @@
     </header>
 
     <section class="card controls">
-      <h2>1. Event setup</h2>
-      <fieldset>
+      <h2>Event setup</h2>
+      <fieldset class="team-count-options">
         <legend>Number of teams</legend>
-        <label><input type="radio" name="teamCount" value="8" checked> 8 teams (4 rooms)</label>
-        <label><input type="radio" name="teamCount" value="10"> 10 teams (5 rooms)</label>
+        <label class="radio-option"><input type="radio" name="teamCount" value="8" checked><span>8 teams (4 rooms)</span></label>
+        <label class="radio-option"><input type="radio" name="teamCount" value="10"><span>10 teams (5 rooms)</span></label>
       </fieldset>
 
       <label for="teams">Teams, one per line. Format: school_teamnumber</label>
@@ -36,14 +36,19 @@ SchoolF_1</textarea>
       <p class="hint">Examples: HCI_1, HCI_2, RI_1. A maximum of two teams from the same school is allowed.</p>
 
       <div class="row">
-        <label for="seed">Seed / Matrix ID</label>
-        <input id="seed" type="text" value="SYPT-2026" maxlength="60">
-        <label for="alternatives">Alternatives</label>
-        <select id="alternatives">
-          <option value="1">1</option>
-          <option value="3" selected>3</option>
-          <option value="5">5</option>
-        </select>
+        <div class="field-group">
+          <label for="seed">Seed / Matrix ID</label>
+          <input id="seed" type="text" maxlength="60" aria-describedby="seedHint">
+          <p id="seedHint" class="hint compact">Automatically uses the following event year because matrices are prepared near year-end. You may edit it.</p>
+        </div>
+        <div class="field-group">
+          <label for="alternatives">Alternatives</label>
+          <select id="alternatives">
+            <option value="1">1</option>
+            <option value="3" selected>3</option>
+            <option value="5">5</option>
+          </select>
+        </div>
       </div>
 
       <div id="message" class="message" aria-live="polite"></div>

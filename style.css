@@ -13,16 +13,23 @@ h2, h3 { margin-top: 0; }
   background: white; border: 1px solid #dce3ed; border-radius: 12px;
   padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,.04);
 }
-fieldset { border: 0; padding: 0; margin: .5rem 0 1rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
-legend { font-weight: 700; margin-bottom: .5rem; }
+fieldset { border: 0; padding: 0; margin: .5rem 0 1rem; }
+legend { font-weight: 700; margin-bottom: .65rem; }
 label { font-weight: 600; }
+.team-count-options { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.team-count-options legend { width: 100%; }
+.radio-option { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; }
+.radio-option input[type="radio"] { width: auto; margin: 0; flex: 0 0 auto; }
+.radio-option span { white-space: nowrap; }
 textarea, input, select {
   width: 100%; padding: .7rem; margin-top: .35rem; border: 1px solid #acb7c6;
   border-radius: 7px; font: inherit; background: white; color: inherit;
 }
 textarea { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; resize: vertical; }
 .hint { color: #5d6878; font-size: .9rem; }
-.row { display: grid; grid-template-columns: 1fr 220px; gap: 1rem; margin-top: 1rem; }
+.hint.compact { margin: .35rem 0 0; }
+.row { display: grid; grid-template-columns: 1fr 220px; gap: 1rem; margin-top: 1rem; align-items: start; }
+.field-group { min-width: 0; }
 .actions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1rem; }
 button { border: 0; border-radius: 7px; padding: .75rem 1rem; font-weight: 700; cursor: pointer; background: #8c1d40; color: white; }
 button.secondary { background: #34495e; }
@@ -40,7 +47,10 @@ th { background: #f0f3f7; }
 .validation { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: .35rem .8rem; margin-top: 1rem; }
 .validation span { color: #137333; }
 .matrix-actions { margin-top: 1rem; }
-@media (max-width: 650px) { .row { grid-template-columns: 1fr; } fieldset { flex-direction: column; gap: .5rem; } }
+@media (max-width: 650px) {
+  .row { grid-template-columns: 1fr; }
+  .team-count-options { flex-direction: column; gap: .75rem; }
+}
 @media print {
   body { background: white; }
   .controls, header p, .matrix-actions { display: none !important; }

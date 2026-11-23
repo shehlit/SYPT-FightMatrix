@@ -9,6 +9,13 @@
   const example8 = ["SchoolA_1","SchoolA_2","SchoolB_1","SchoolB_2","SchoolC_1","SchoolD_1","SchoolE_1","SchoolF_1"];
   const example10 = [...example8,"SchoolG_1","SchoolH_1"];
 
+  function defaultMatrixId() {
+    const eventYear = new Date().getFullYear() + 1;
+    return `SYPT-${eventYear}`;
+  }
+
+  seedEl.value = defaultMatrixId();
+
   function teamCount() { return Number(document.querySelector('input[name="teamCount"]:checked').value); }
   function teams() { return teamsEl.value.split(/\r?\n/).map(x => x.trim()).filter(Boolean); }
   function esc(s) { return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
@@ -24,7 +31,7 @@
     const errors = SYPTMatrix.validateTeams(list, teamCount());
     results.innerHTML = "";
     if (errors.length) { msg.className = "message error"; msg.innerHTML = errors.map(esc).join("<br>"); return; }
-    const baseSeed = seedEl.value.trim() || `SYPT-${Date.now()}`;
+    const baseSeed = seedEl.value.trim() || defaultMatrixId();
     seedEl.value = baseSeed;
     const wanted = Number(alternativesEl.value);
     const generated = SYPTMatrix.generateAlternatives(list, baseSeed, wanted);
