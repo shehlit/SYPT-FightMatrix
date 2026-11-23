@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <base target="_top">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SYPT Fight Matrix Generator</title>
 
@@ -41,12 +42,12 @@
     }
 
     .card {
-      background: white;
+      background: #fff;
       border: 1px solid #dce3ed;
       border-radius: 12px;
       padding: 1.25rem;
       margin-bottom: 1.25rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
     }
 
     fieldset {
@@ -55,13 +56,9 @@
       margin: .5rem 0 1rem;
     }
 
-    legend {
-      font-weight: 700;
-      margin-bottom: .65rem;
-    }
-
+    legend,
     label {
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .team-count-options {
@@ -72,6 +69,7 @@
 
     .team-count-options legend {
       width: 100%;
+      margin-bottom: .65rem;
     }
 
     .radio-option {
@@ -81,19 +79,29 @@
       cursor: pointer;
     }
 
-    .radio-option input[type="radio"] {
+    .radio-option input {
       width: auto;
       margin: 0;
     }
 
-    textarea, input, select {
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 1rem;
+      margin-top: 1rem;
+      align-items: start;
+    }
+
+    textarea,
+    input,
+    select {
       width: 100%;
       padding: .7rem;
       margin-top: .35rem;
       border: 1px solid #acb7c6;
       border-radius: 7px;
       font: inherit;
-      background: white;
+      background: #fff;
       color: inherit;
     }
 
@@ -111,12 +119,16 @@
       margin: .35rem 0 0;
     }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 220px;
-      gap: 1rem;
-      margin-top: 1rem;
-      align-items: start;
+    .rule-box {
+      background: #f7f1f4;
+      border-left: 4px solid #8c1d40;
+      border-radius: 6px;
+      padding: .8rem 1rem;
+      margin: 1rem 0;
+    }
+
+    .rule-box p {
+      margin: .3rem 0;
     }
 
     .actions {
@@ -133,7 +145,7 @@
       font-weight: 700;
       cursor: pointer;
       background: #8c1d40;
-      color: white;
+      color: #fff;
     }
 
     button.secondary {
@@ -193,7 +205,8 @@
       margin-top: .75rem;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #dce3ed;
       padding: .55rem .65rem;
       text-align: left;
@@ -203,9 +216,15 @@
       background: #f0f3f7;
     }
 
+    .sequence {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
+
     .validation {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: .35rem .8rem;
       margin-top: 1rem;
     }
@@ -231,7 +250,7 @@
 
     @media print {
       body {
-        background: white;
+        background: #fff;
       }
 
       .controls,
@@ -265,6 +284,7 @@
     </p>
   </header>
 
+
   <section class="card controls">
 
     <h2>Event setup</h2>
@@ -292,6 +312,7 @@
 
     </fieldset>
 
+
     <label for="teams">
       Teams, one per line. Format: school_teamnumber
     </label>
@@ -304,14 +325,33 @@ SchoolA_2
 SchoolB_1
 SchoolB_2
 SchoolC_1
+SchoolC_2
 SchoolD_1
-SchoolE_1
-SchoolF_1</textarea>
+SchoolD_2</textarea>
 
     <p class="hint">
       Examples: HCI_1, HCI_2, RI_1.
       A maximum of two teams from the same school is allowed.
     </p>
+
+
+    <div class="rule-box">
+
+      <strong>Balanced role rule</strong>
+
+      <p>
+        Each team must be Reporter once and Opponent once
+        in Rounds 1–2, and again once in each role
+        in Rounds 3–4.
+      </p>
+
+      <p>
+        Allowed sequences:
+        <strong>RORO, ROOR, ORRO, OROR</strong>.
+      </p>
+
+    </div>
+
 
     <div class="row">
 
@@ -334,6 +374,7 @@ SchoolF_1</textarea>
 
       </div>
 
+
       <div>
 
         <label for="alternatives">
@@ -350,11 +391,13 @@ SchoolF_1</textarea>
 
     </div>
 
+
     <div
       id="message"
       class="message"
       aria-live="polite">
     </div>
+
 
     <div class="actions">
 
@@ -375,6 +418,7 @@ SchoolF_1</textarea>
 
   </section>
 
+
   <section
     id="results"
     aria-live="polite">
@@ -387,6 +431,7 @@ SchoolF_1</textarea>
 
 "use strict";
 
+
 /* =========================================================
    SYPT FIGHT MATRIX ENGINE
    ========================================================= */
@@ -395,21 +440,41 @@ const SYPTMatrix = (() => {
 
   const ROUNDS = 4;
 
+  const ALLOWED =
+    new Set([
+      "RORO",
+      "ROOR",
+      "ORRO",
+      "OROR"
+    ]);
+
+
   function schoolOf(team) {
 
-    const i = team.lastIndexOf("_");
+    const i =
+      team.lastIndexOf("_");
 
     return i > 0
-      ? team.slice(0, i).trim().toLowerCase()
+      ? team
+          .slice(0, i)
+          .trim()
+          .toLowerCase()
       : "";
   }
 
 
-  function validateTeams(teams, expected) {
+  function validateTeams(
+    teams,
+    expected
+  ) {
 
     const errors = [];
 
-    if (teams.length !== expected) {
+
+    if (
+      teams.length !== expected
+    ) {
+
       errors.push(
         `Enter exactly ${expected} teams.`
       );
@@ -418,8 +483,13 @@ const SYPTMatrix = (() => {
 
     if (
       new Set(
-        teams.map(t => t.toLowerCase())
-      ).size !== teams.length
+        teams.map(
+          team =>
+            team.toLowerCase()
+        )
+      ).size
+      !==
+      teams.length
     ) {
 
       errors.push(
@@ -428,11 +498,15 @@ const SYPTMatrix = (() => {
     }
 
 
-    const pattern = /^.+_[1-9]\d*$/;
+    const pattern =
+      /^.+_[1-9]\d*$/;
+
 
     teams.forEach(team => {
 
-      if (!pattern.test(team)) {
+      if (
+        !pattern.test(team)
+      ) {
 
         errors.push(
           `Invalid team identifier: ${team}. ` +
@@ -443,39 +517,51 @@ const SYPTMatrix = (() => {
     });
 
 
-    const schoolCounts = new Map();
+    const counts =
+      new Map();
+
 
     teams.forEach(team => {
 
-      const school = schoolOf(team);
+      const school =
+        schoolOf(team);
 
-      schoolCounts.set(
+      counts.set(
         school,
-        (schoolCounts.get(school) || 0) + 1
+        (counts.get(school) || 0) + 1
       );
 
     });
 
 
-    schoolCounts.forEach((count, school) => {
+    counts.forEach(
+      (count, school) => {
 
-      if (count > 2) {
+        if (
+          count > 2
+        ) {
 
-        errors.push(
-          `School ${school} has ${count} teams; maximum is 2.`
-        );
+          errors.push(
+            `School ${school} has ${count} teams; ` +
+            `maximum is 2.`
+          );
+        }
+
       }
+    );
 
-    });
 
-
-    return [...new Set(errors)];
+    return [
+      ...new Set(errors)
+    ];
   }
 
 
   function hashSeed(text) {
 
-    let hash = 2166136261 >>> 0;
+    let hash =
+      2166136261 >>> 0;
+
 
     for (
       let i = 0;
@@ -483,11 +569,16 @@ const SYPTMatrix = (() => {
       i++
     ) {
 
-      hash ^= text.charCodeAt(i);
+      hash ^=
+        text.charCodeAt(i);
 
       hash =
-        Math.imul(hash, 16777619);
+        Math.imul(
+          hash,
+          16777619
+        );
     }
+
 
     return hash >>> 0;
   }
@@ -498,6 +589,7 @@ const SYPTMatrix = (() => {
     let a =
       hashSeed(seedText) || 1;
 
+
     return () => {
 
       a |= 0;
@@ -505,11 +597,13 @@ const SYPTMatrix = (() => {
       a =
         (a + 0x6D2B79F5) | 0;
 
+
       let t =
         Math.imul(
           a ^ (a >>> 15),
           1 | a
         );
+
 
       t =
         (
@@ -518,21 +612,30 @@ const SYPTMatrix = (() => {
             t ^ (t >>> 7),
             61 | t
           )
-        ) ^ t;
+        )
+        ^ t;
+
 
       return (
         (t ^ (t >>> 14)) >>> 0
       ) / 4294967296;
+
     };
   }
 
 
-  function shuffled(items, random) {
+  function shuffled(
+    items,
+    random
+  ) {
 
-    const result = [...items];
+    const result =
+      [...items];
+
 
     for (
-      let i = result.length - 1;
+      let i =
+        result.length - 1;
       i > 0;
       i--
     ) {
@@ -541,6 +644,7 @@ const SYPTMatrix = (() => {
         Math.floor(
           random() * (i + 1)
         );
+
 
       [
         result[i],
@@ -552,11 +656,15 @@ const SYPTMatrix = (() => {
       ];
     }
 
+
     return result;
   }
 
 
-  function pairKey(a, b) {
+  function pairKey(
+    a,
+    b
+  ) {
 
     return [a, b]
       .sort()
@@ -564,14 +672,109 @@ const SYPTMatrix = (() => {
   }
 
 
-  function roleFor(
-    sequence,
-    round
+  /*
+   * Every team must receive:
+   *
+   * R1/R2 = RO or OR
+   * R3/R4 = RO or OR
+   *
+   * This creates exactly four possible sequences:
+   *
+   * RORO
+   * ROOR
+   * ORRO
+   * OROR
+   */
+
+  function buildRoles(
+    teams,
+    random
   ) {
 
-    return sequence.charAt(
-      round - 1
-    );
+    const half =
+      teams.length / 2;
+
+
+    /*
+     * Choose half of the teams
+     * as Round 1 Reporters.
+     *
+     * Their roles automatically
+     * reverse in Round 2.
+     */
+
+    const firstReporters =
+      new Set(
+        shuffled(
+          teams,
+          random
+        )
+        .slice(
+          0,
+          half
+        )
+      );
+
+
+    /*
+     * Independently choose half
+     * as Round 3 Reporters.
+     *
+     * Their roles automatically
+     * reverse in Round 4.
+     */
+
+    const thirdReporters =
+      new Set(
+        shuffled(
+          teams,
+          random
+        )
+        .slice(
+          0,
+          half
+        )
+      );
+
+
+    const roles = {};
+
+    const sequences = {};
+
+
+    teams.forEach(team => {
+
+      roles[team] = [
+
+        firstReporters.has(team)
+          ? "R"
+          : "O",
+
+        firstReporters.has(team)
+          ? "O"
+          : "R",
+
+        thirdReporters.has(team)
+          ? "R"
+          : "O",
+
+        thirdReporters.has(team)
+          ? "O"
+          : "R"
+
+      ];
+
+
+      sequences[team] =
+        roles[team].join("");
+
+    });
+
+
+    return {
+      roles,
+      sequences
+    };
   }
 
 
@@ -583,40 +786,32 @@ const SYPTMatrix = (() => {
     const random =
       rng(seedText);
 
-    const ordered =
-      shuffled(
+
+    const {
+      roles,
+      sequences
+    } =
+      buildRoles(
         teams,
         random
       );
 
 
-    /*
-       Exactly half RORO
-       and half OROR.
-    */
-
-    const sequences = {};
-
-    ordered.forEach(
-      (team, index) => {
-
-        sequences[team] =
-          index < teams.length / 2
-            ? "RORO"
-            : "OROR";
-      }
-    );
-
-
     const met =
       new Set();
+
 
     const schedule = [];
 
 
-    function solveRound(round) {
+    function solveRound(
+      round
+    ) {
 
-      if (round > ROUNDS) {
+      if (
+        round > ROUNDS
+      ) {
+
         return true;
       }
 
@@ -624,10 +819,9 @@ const SYPTMatrix = (() => {
       const reporters =
         teams.filter(
           team =>
-            roleFor(
-              sequences[team],
-              round
-            ) === "R"
+            roles[team][
+              round - 1
+            ] === "R"
         );
 
 
@@ -635,10 +829,9 @@ const SYPTMatrix = (() => {
         new Set(
           teams.filter(
             team =>
-              roleFor(
-                sequences[team],
-                round
-              ) === "O"
+              roles[team][
+                round - 1
+              ] === "O"
           )
         );
 
@@ -646,15 +839,16 @@ const SYPTMatrix = (() => {
       const fights = [];
 
 
-      function assignReporter(
+      function assign(
         remainingReporters
       ) {
 
         if (
-          remainingReporters.length === 0
+          remainingReporters
+            .length === 0
         ) {
 
-          const roomOrder =
+          const orderedFights =
             shuffled(
               fights,
               random
@@ -662,11 +856,16 @@ const SYPTMatrix = (() => {
 
 
           schedule.push(
-            ...roomOrder.map(
+            ...orderedFights.map(
               (fight, index) => ({
+
                 round,
-                room: index + 1,
+
+                room:
+                  index + 1,
+
                 ...fight
+
               })
             )
           );
@@ -677,14 +876,16 @@ const SYPTMatrix = (() => {
               round + 1
             )
           ) {
+
             return true;
           }
 
 
           schedule.splice(
             schedule.length -
-              roomOrder.length,
-            roomOrder.length
+              orderedFights.length,
+
+            orderedFights.length
           );
 
 
@@ -693,12 +894,16 @@ const SYPTMatrix = (() => {
 
 
         /*
-         Choose the reporter
-         with the fewest valid
-         opponent options first.
-        */
+         * Select the Reporter with
+         * the smallest number of
+         * valid opponents first.
+         *
+         * This makes the
+         * backtracking search more
+         * efficient.
+         */
 
-        const constrained =
+        const choices =
           shuffled(
             remainingReporters,
             random
@@ -725,6 +930,7 @@ const SYPTMatrix = (() => {
                 )
 
               )
+
           }))
           .sort(
             (a, b) =>
@@ -734,11 +940,12 @@ const SYPTMatrix = (() => {
 
 
         const choice =
-          constrained[0];
+          choices[0];
 
 
         if (
-          !choice ||
+          !choice
+          ||
           choice.options.length === 0
         ) {
 
@@ -765,31 +972,43 @@ const SYPTMatrix = (() => {
             opponent
           );
 
+
           met.add(key);
 
 
           fights.push({
+
             reporter:
               choice.reporter,
+
             opponent
+
           });
 
 
           const next =
-            remainingReporters.filter(
-              team =>
-                team !==
-                choice.reporter
-            );
+            remainingReporters
+              .filter(
+                team =>
+                  team
+                  !==
+                  choice.reporter
+              );
 
 
           if (
-            assignReporter(next)
+            assign(next)
           ) {
 
             return true;
           }
 
+
+          /*
+           * Backtrack if the
+           * remaining assignments
+           * become impossible.
+           */
 
           fights.pop();
 
@@ -798,6 +1017,7 @@ const SYPTMatrix = (() => {
           opponents.add(
             opponent
           );
+
         }
 
 
@@ -805,13 +1025,16 @@ const SYPTMatrix = (() => {
       }
 
 
-      return assignReporter(
+      return assign(
         reporters
       );
     }
 
 
-    if (!solveRound(1)) {
+    if (
+      !solveRound(1)
+    ) {
+
       return null;
     }
 
@@ -825,10 +1048,14 @@ const SYPTMatrix = (() => {
 
 
     return verification.valid
+
       ? {
-          matrix: schedule,
+          matrix:
+            schedule,
+
           sequences
         }
+
       : null;
   }
 
@@ -848,7 +1075,7 @@ const SYPTMatrix = (() => {
       new Map();
 
 
-    const actualRoles =
+    const actual =
       Object.fromEntries(
         teams.map(
           team => [
@@ -864,23 +1091,27 @@ const SYPTMatrix = (() => {
       of schedule
     ) {
 
-      actualRoles[
+      actual[
         fight.reporter
       ][fight.round - 1] =
         "R";
 
 
-      actualRoles[
+      actual[
         fight.opponent
       ][fight.round - 1] =
         "O";
 
 
+      /*
+       * School constraint
+       */
+
       if (
         schoolOf(
           fight.reporter
         )
-          ===
+        ===
         schoolOf(
           fight.opponent
         )
@@ -894,7 +1125,12 @@ const SYPTMatrix = (() => {
       }
 
 
-      const pair =
+      /*
+       * Repeated opponent
+       * constraint
+       */
+
+      const key =
         pairKey(
           fight.reporter,
           fight.opponent
@@ -902,7 +1138,7 @@ const SYPTMatrix = (() => {
 
 
       if (
-        pairs.has(pair)
+        pairs.has(key)
       ) {
 
         problems.push(
@@ -913,8 +1149,13 @@ const SYPTMatrix = (() => {
       }
 
 
-      pairs.add(pair);
+      pairs.add(key);
 
+
+      /*
+       * Once per round
+       * constraint
+       */
 
       if (
         !perRound.has(
@@ -929,13 +1170,11 @@ const SYPTMatrix = (() => {
       }
 
 
-      for (
-        const team
-        of [
-          fight.reporter,
-          fight.opponent
-        ]
-      ) {
+      [
+        fight.reporter,
+        fight.opponent
+      ]
+      .forEach(team => {
 
         if (
           perRound
@@ -945,7 +1184,7 @@ const SYPTMatrix = (() => {
 
           problems.push(
             `${team} appears more than once ` +
-            `in round ${fight.round}`
+            `in Round ${fight.round}.`
           );
         }
 
@@ -953,68 +1192,103 @@ const SYPTMatrix = (() => {
         perRound
           .get(fight.round)
           .add(team);
-      }
+
+      });
+
     }
 
 
+    /*
+     * Validate the complete
+     * four-round role sequence
+     * for every team.
+     */
+
     teams.forEach(team => {
 
-      const actual =
-        actualRoles[team]
+      const sequence =
+        actual[team]
           .join("");
 
 
-      const expected =
-        sequences[team];
-
-
       if (
-        actual !== expected
+        sequence
+        !==
+        sequences[team]
       ) {
 
         problems.push(
-          `${team} follows ` +
-          `${actual || "an incomplete sequence"}, ` +
-          `expected ${expected}.`
+          `${team} has sequence ` +
+          `${sequence || "incomplete"}; ` +
+          `expected ${sequences[team]}.`
         );
       }
 
 
       if (
-        expected !== "RORO"
-        &&
-        expected !== "OROR"
+        !ALLOWED.has(
+          sequence
+        )
       ) {
 
         problems.push(
           `${team} has invalid ` +
-          `assigned sequence ${expected}.`
+          `sequence ` +
+          `${sequence || "incomplete"}.`
+        );
+      }
+
+
+      /*
+       * Explicitly check
+       * Rounds 1-2.
+       */
+
+      if (
+        sequence
+          .slice(0, 2)
+          .split("")
+          .sort()
+          .join("")
+        !==
+        "OR"
+      ) {
+
+        problems.push(
+          `${team} is not balanced ` +
+          `in Rounds 1–2.`
+        );
+      }
+
+
+      /*
+       * Explicitly check
+       * Rounds 3-4.
+       */
+
+      if (
+        sequence
+          .slice(2, 4)
+          .split("")
+          .sort()
+          .join("")
+        !==
+        "OR"
+      ) {
+
+        problems.push(
+          `${team} is not balanced ` +
+          `in Rounds 3–4.`
         );
       }
 
     });
 
 
-    const roroCount =
-      teams.filter(
-        team =>
-          sequences[team] ===
-          "RORO"
-      ).length;
-
-
-    if (
-      roroCount !==
-      teams.length / 2
-    ) {
-
-      problems.push(
-        `Expected ` +
-        `${teams.length / 2} RORO teams, ` +
-        `found ${roroCount}.`
-      );
-    }
-
+    /*
+     * Check every round
+     * contains every team.
+     */
 
     for (
       let round = 1;
@@ -1026,7 +1300,8 @@ const SYPTMatrix = (() => {
         (
           perRound
             .get(round)
-            ?.size || 0
+            ?.size
+          || 0
         )
         !==
         teams.length
@@ -1040,11 +1315,12 @@ const SYPTMatrix = (() => {
 
 
     return {
+
       valid:
         problems.length === 0,
 
-      problems,
-      actualRoles
+      problems
+
     };
   }
 
@@ -1061,10 +1337,19 @@ const SYPTMatrix = (() => {
       new Set();
 
 
+    /*
+     * Try many deterministic
+     * variations of the base
+     * Matrix ID.
+     */
+
     for (
       let attempt = 0;
-      attempt < 500
-        && outputs.length < count;
+
+      attempt < 2000
+      &&
+      outputs.length < count;
+
       attempt++
     ) {
 
@@ -1079,37 +1364,47 @@ const SYPTMatrix = (() => {
         );
 
 
-      if (!generated) {
+      if (
+        !generated
+      ) {
+
         continue;
       }
 
 
       const signature =
+
         teams
-        .map(
-          team =>
-            `${team}:` +
-            `${generated.sequences[team]}`
-        )
-        .join("|")
+          .map(
+            team =>
+              `${team}:` +
+              `${generated.sequences[team]}`
+          )
+          .join("|")
+
         +
+
         "::"
+
         +
+
         generated.matrix
-        .map(
-          fight =>
-            `${fight.round}:` +
-            `${fight.reporter}>` +
-            `${fight.opponent}`
-        )
-        .join("|");
+          .map(
+            fight =>
+              `${fight.round}:` +
+              `${fight.reporter}>` +
+              `${fight.opponent}`
+          )
+          .join("|");
 
 
       if (
         !seen.has(signature)
       ) {
 
-        seen.add(signature);
+        seen.add(
+          signature
+        );
 
 
         outputs.push({
@@ -1117,11 +1412,7 @@ const SYPTMatrix = (() => {
           seed:
             matrixSeed,
 
-          matrix:
-            generated.matrix,
-
-          sequences:
-            generated.sequences,
+          ...generated,
 
           verification:
             verify(
@@ -1140,13 +1431,15 @@ const SYPTMatrix = (() => {
 
 
   return {
-    schoolOf,
+
     validateTeams,
-    generateAlternatives,
-    verify
+
+    generateAlternatives
+
   };
 
 })();
+
 
 
 /* =========================================================
@@ -1160,20 +1453,24 @@ const SYPTMatrix = (() => {
       "teams"
     );
 
+
   const seedEl =
     document.getElementById(
       "seed"
     );
+
 
   const alternativesEl =
     document.getElementById(
       "alternatives"
     );
 
+
   const messageEl =
     document.getElementById(
       "message"
     );
+
 
   const resultsEl =
     document.getElementById(
@@ -1181,42 +1478,54 @@ const SYPTMatrix = (() => {
     );
 
 
+  /*
+   * Default examples deliberately
+   * include four schools with two
+   * teams each.
+   */
+
   const example8 = [
+
     "SchoolA_1",
     "SchoolA_2",
+
     "SchoolB_1",
     "SchoolB_2",
+
     "SchoolC_1",
+    "SchoolC_2",
+
     "SchoolD_1",
-    "SchoolE_1",
-    "SchoolF_1"
+    "SchoolD_2"
+
   ];
 
 
   const example10 = [
+
     ...example8,
-    "SchoolG_1",
-    "SchoolH_1"
+
+    "SchoolE_1",
+    "SchoolE_2"
+
   ];
 
 
   function defaultMatrixId() {
 
     /*
-       SYPT matrix is normally
-       prepared near year-end
-       for the following year's
-       competition.
-    */
-
-    const eventYear =
-      new Date()
-        .getFullYear()
-      + 1;
-
+     * Matrix is normally
+     * generated near year-end
+     * for the following year's
+     * SYPT.
+     */
 
     return (
-      `SYPT-${eventYear}`
+      `SYPT-${
+        new Date()
+          .getFullYear()
+        + 1
+      }`
     );
   }
 
@@ -1228,16 +1537,21 @@ const SYPTMatrix = (() => {
   function teamCount() {
 
     return Number(
-      document.querySelector(
-        'input[name="teamCount"]:checked'
-      ).value
+
+      document
+        .querySelector(
+          'input[name="teamCount"]:checked'
+        )
+        .value
+
     );
   }
 
 
   function teams() {
 
-    return teamsEl.value
+    return teamsEl
+      .value
       .split(/\r?\n/)
       .map(
         value =>
@@ -1253,15 +1567,30 @@ const SYPTMatrix = (() => {
       .replace(
         /[&<>"']/g,
         character => ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;"
+
+          "&":
+            "&amp;",
+
+          "<":
+            "&lt;",
+
+          ">":
+            "&gt;",
+
+          '"':
+            "&quot;",
+
+          "'":
+            "&#39;"
+
         })[character]
       );
   }
 
+
+  /*
+   * Team-count selector
+   */
 
   document
     .querySelectorAll(
@@ -1274,23 +1603,29 @@ const SYPTMatrix = (() => {
           () => {
 
             const current =
-              teams();
+              teams()
+                .join("\n");
 
 
             if (
-              current.join("\n")
-                ===
+              current
+              ===
               example8.join("\n")
+
               ||
-              current.join("\n")
-                ===
+
+              current
+              ===
               example10.join("\n")
             ) {
 
               teamsEl.value =
+
                 (
                   teamCount() === 8
+
                     ? example8
+
                     : example10
                 )
                 .join("\n");
@@ -1300,6 +1635,7 @@ const SYPTMatrix = (() => {
             resultsEl.innerHTML =
               "";
 
+
             messageEl.textContent =
               "";
 
@@ -1307,6 +1643,10 @@ const SYPTMatrix = (() => {
         )
     );
 
+
+  /*
+   * Generate button
+   */
 
   document
     .getElementById(
@@ -1339,18 +1679,27 @@ const SYPTMatrix = (() => {
           messageEl.className =
             "message error";
 
+
           messageEl.innerHTML =
             errors
-              .map(escapeHtml)
+              .map(
+                escapeHtml
+              )
               .join("<br>");
+
 
           return;
         }
 
 
         const baseSeed =
-          seedEl.value.trim()
+
+          seedEl
+            .value
+            .trim()
+
           ||
+
           defaultMatrixId();
 
 
@@ -1360,7 +1709,8 @@ const SYPTMatrix = (() => {
 
         const wanted =
           Number(
-            alternativesEl.value
+            alternativesEl
+              .value
           );
 
 
@@ -1380,35 +1730,56 @@ const SYPTMatrix = (() => {
           messageEl.className =
             "message error";
 
+
           messageEl.textContent =
+
             "No valid matrix was found. " +
+
             "Check the team/school combination " +
+
             "or change the Matrix ID and try again.";
+
 
           return;
         }
 
 
         messageEl.className =
-          generated.length === wanted
+
+          generated.length
+          ===
+          wanted
+
             ? "message ok"
+
             : "message error";
 
 
         messageEl.textContent =
-          generated.length === wanted
-            ? `${generated.length} valid matrix option(s) generated.`
-            : `Only ${generated.length} distinct valid matrix option(s) were found.`;
+
+          generated.length
+          ===
+          wanted
+
+            ?
+
+            `${generated.length} valid matrix option(s) generated.`
+
+            :
+
+            `Only ${generated.length} distinct valid option(s) were found.`;
 
 
         generated.forEach(
-          (matrix, index) => {
+          (result, index) => {
 
             resultsEl.appendChild(
+
               renderMatrix(
-                matrix,
+                result,
                 index + 1
               )
+
             );
 
           }
@@ -1417,6 +1788,10 @@ const SYPTMatrix = (() => {
       }
     );
 
+
+  /*
+   * Print button
+   */
 
   document
     .getElementById(
@@ -1439,61 +1814,115 @@ const SYPTMatrix = (() => {
         "section"
       );
 
+
     section.className =
       "card";
 
+
+    /*
+     * Matrix heading
+     */
 
     const heading =
       document.createElement(
         "div"
       );
 
+
     heading.className =
       "matrix-head";
 
+
     heading.innerHTML =
-      `<h2>Matrix ${number}</h2>` +
+
+      `<h2>Matrix ${number}</h2>`
+
+      +
+
       `<span class="badge">` +
       `✓ VALID MATRIX` +
       `</span>`;
+
 
     section.appendChild(
       heading
     );
 
 
+    /*
+     * Matrix ID
+     */
+
     const id =
       document.createElement(
         "p"
       );
 
+
     id.innerHTML =
-      `<strong>Matrix ID:</strong> ` +
+
+      `<strong>Matrix ID:</strong> `
+
+      +
+
       escapeHtml(
         result.seed
       );
 
-    section.appendChild(id);
 
+    section.appendChild(
+      id
+    );
+
+
+    /*
+     * Team role sequence table
+     */
 
     const sequenceWrap =
       document.createElement(
         "div"
       );
 
+
     sequenceWrap.className =
       "table-wrap";
 
 
     let sequenceHtml =
-      "<h3>Team role sequences</h3>" +
-      "<table>" +
-      "<thead>" +
-      "<tr>" +
-      "<th>Team</th>" +
-      "<th>Sequence</th>" +
-      "</tr>" +
-      "</thead>" +
+
+      "<h3>Team role sequences</h3>"
+
+      +
+
+      "<table>"
+
+      +
+
+      "<thead>"
+
+      +
+
+      "<tr>"
+
+      +
+
+      "<th>Team</th>"
+
+      +
+
+      "<th>Sequence</th>"
+
+      +
+
+      "</tr>"
+
+      +
+
+      "</thead>"
+
+      +
+
       "<tbody>";
 
 
@@ -1509,9 +1938,23 @@ const SYPTMatrix = (() => {
         ([team, sequence]) => {
 
           sequenceHtml +=
-            "<tr>" +
-            `<td>${escapeHtml(team)}</td>` +
-            `<td><strong>${sequence}</strong></td>` +
+
+            "<tr>"
+
+            +
+
+            `<td>${
+              escapeHtml(team)
+            }</td>`
+
+            +
+
+            `<td class="sequence">` +
+            `${sequence}` +
+            `</td>`
+
+            +
+
             "</tr>";
 
         }
@@ -1519,82 +1962,169 @@ const SYPTMatrix = (() => {
 
 
     sequenceHtml +=
-      "</tbody></table>";
+
+      "</tbody>"
+
+      +
+
+      "</table>";
 
 
     sequenceWrap.innerHTML =
       sequenceHtml;
+
 
     section.appendChild(
       sequenceWrap
     );
 
 
+    /*
+     * Main fight matrix
+     */
+
     const tableWrap =
       document.createElement(
         "div"
       );
+
 
     tableWrap.className =
       "table-wrap";
 
 
     let matrixHtml =
-      "<h3>Fight matrix</h3>" +
-      "<table>" +
-      "<thead>" +
-      "<tr>" +
-      "<th>Round</th>" +
-      "<th>Room</th>" +
-      "<th>Reporter</th>" +
-      "<th>Opponent</th>" +
-      "</tr>" +
-      "</thead>" +
+
+      "<h3>Fight matrix</h3>"
+
+      +
+
+      "<table>"
+
+      +
+
+      "<thead>"
+
+      +
+
+      "<tr>"
+
+      +
+
+      "<th>Round</th>"
+
+      +
+
+      "<th>Room</th>"
+
+      +
+
+      "<th>Reporter</th>"
+
+      +
+
+      "<th>Opponent</th>"
+
+      +
+
+      "</tr>"
+
+      +
+
+      "</thead>"
+
+      +
+
       "<tbody>";
 
 
     result.matrix
-      .forEach(fight => {
+      .forEach(
+        fight => {
 
-        matrixHtml +=
-          "<tr>" +
-          `<td>${fight.round}</td>` +
-          `<td>${fight.room}</td>` +
-          `<td>${escapeHtml(fight.reporter)}</td>` +
-          `<td>${escapeHtml(fight.opponent)}</td>` +
-          "</tr>";
+          matrixHtml +=
 
-      });
+            "<tr>"
+
+            +
+
+            `<td>${fight.round}</td>`
+
+            +
+
+            `<td>${fight.room}</td>`
+
+            +
+
+            `<td>${
+              escapeHtml(
+                fight.reporter
+              )
+            }</td>`
+
+            +
+
+            `<td>${
+              escapeHtml(
+                fight.opponent
+              )
+            }</td>`
+
+            +
+
+            "</tr>";
+
+        }
+      );
 
 
     matrixHtml +=
-      "</tbody></table>";
+
+      "</tbody>"
+
+      +
+
+      "</table>";
 
 
     tableWrap.innerHTML =
       matrixHtml;
+
 
     section.appendChild(
       tableWrap
     );
 
 
+    /*
+     * Verification display
+     */
+
     const validation =
       document.createElement(
         "div"
       );
+
 
     validation.className =
       "validation";
 
 
     [
-      "Every team follows RORO or OROR",
-      "Equal numbers assigned to each sequence",
+      "One R and one O in Rounds 1–2",
+
+      "One R and one O in Rounds 3–4",
+
+      "Exactly 2R and 2O overall",
+
       "All teams appear once per round",
+
       "No repeated pairings",
+
       "No same-school encounters",
+
       "All fights assigned"
+
     ]
     .forEach(text => {
 
@@ -1603,8 +2133,10 @@ const SYPTMatrix = (() => {
           "span"
         );
 
+
       item.textContent =
         `✓ ${text}`;
+
 
       validation.appendChild(
         item
@@ -1618,10 +2150,15 @@ const SYPTMatrix = (() => {
     );
 
 
+    /*
+     * CSV download button
+     */
+
     const actions =
       document.createElement(
         "div"
       );
+
 
     actions.className =
       "matrix-actions";
@@ -1632,11 +2169,14 @@ const SYPTMatrix = (() => {
         "button"
       );
 
+
     csvButton.type =
       "button";
 
+
     csvButton.className =
       "secondary";
+
 
     csvButton.textContent =
       "Download CSV";
@@ -1646,9 +2186,13 @@ const SYPTMatrix = (() => {
       "click",
       () =>
         downloadCSV(
+
           result.matrix,
+
           result.sequences,
+
           result.seed
+
         )
     );
 
@@ -1656,6 +2200,7 @@ const SYPTMatrix = (() => {
     actions.appendChild(
       csvButton
     );
+
 
     section.appendChild(
       actions
@@ -1673,12 +2218,19 @@ const SYPTMatrix = (() => {
   ) {
 
     const rows = [[
+
       "Round",
+
       "Room",
+
       "Reporter",
+
       "Reporter Sequence",
+
       "Opponent",
+
       "Opponent Sequence"
+
     ]];
 
 
@@ -1686,16 +2238,23 @@ const SYPTMatrix = (() => {
       fight => {
 
         rows.push([
+
           fight.round,
+
           fight.room,
+
           fight.reporter,
+
           sequences[
             fight.reporter
           ],
+
           fight.opponent,
+
           sequences[
             fight.opponent
           ]
+
         ]);
 
       }
@@ -1703,20 +2262,30 @@ const SYPTMatrix = (() => {
 
 
     const csv =
+
       rows
-      .map(
-        row =>
-          row.map(
-            value =>
-              `"${String(value)
-                .replaceAll(
-                  '"',
-                  '""'
-                )}"`
-          )
-          .join(",")
-      )
-      .join("\r\n");
+        .map(
+          row =>
+
+            row
+              .map(
+                value =>
+
+                  `"${
+
+                    String(value)
+                      .replaceAll(
+                        '"',
+                        '""'
+                      )
+
+                  }"`
+
+              )
+              .join(",")
+
+        )
+        .join("\r\n");
 
 
     const blob =
