@@ -2,12 +2,13 @@
 
 A browser-based generator for SYPT finals fight matrices, designed for hosting on GitHub Pages.
 
-## Supported formats
+## Supported formats and constraints
 
 - 8 teams: 4 rounds, 4 rooms per round
 - 10 teams: 4 rounds, 5 rooms per round
+- Half the teams follow RORO (Reporter, Opponent, Reporter, Opponent)
+- Half the teams follow OROR (Opponent, Reporter, Opponent, Reporter)
 - Every team appears exactly once per round
-- Every team is Reporter exactly twice and Opponent exactly twice
 - No repeated team pairing
 - No same-school pairing
 - Maximum two finalist teams per school
@@ -17,9 +18,10 @@ A browser-based generator for SYPT finals fight matrices, designed for hosting o
 
 - Randomized backtracking scheduler
 - Reproducible Matrix ID / seed
+- Displays each team's RORO or OROR assignment
 - 1, 3, or 5 alternative matrices
-- Built-in validation
-- CSV download
+- Built-in role-sequence and pairing validation
+- CSV download including role sequences
 - Print / Save as PDF
 - Static HTML/CSS/JavaScript, suitable for GitHub Pages
 
@@ -35,5 +37,5 @@ In the repository, go to **Settings > Pages**. Under **Build and deployment**, c
 
 - `index.html`: user interface
 - `style.css`: presentation
-- `app.js`: UI logic and CSV export
+- `app.js`: UI logic, sequence display, and CSV export
 - `fightmatrix.js`: fight-matrix generation and verification

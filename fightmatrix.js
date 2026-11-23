@@ -43,77 +43,68 @@ const SYPTMatrix = (() => {
   }
 
   function pairKey(a, b) { return [a, b].sort().join("||"); }
+  function roleFor(sequence, round) { return sequence.charAt(round - 1); }
 
-  // Search assigns one Reporter/Opponent role to every team in every round.
-  // State is small (8 or 10 teams), so randomized backtracking is fast and reliable.
+  // Half the teams are assigned RORO and half OROR. Each round then pairs
+  // a required Reporter with a required Opponent using randomized backtracking.
   function generate(teams, seedText) {
     const random = rng(seedText);
-    const reportCount = Object.fromEntries(teams.map(t => [t, 0]));
-    const opposeCount = Object.fromEntries(teams.map(t => [t, 0]));
+    const ordered = shuffled(teams, random);
+    const sequences = {};
+    ordered.forEach((team, i) => { sequences[team] = i < teams.length / 2 ? "RORO" : "OROR"; });
     const met = new Set();
     const schedule = [];
 
     function solveRound(round) {
       if (round > ROUNDS) return true;
-      const available = new Set(teams);
+      const reporters = teams.filter(t => roleFor(sequences[t], round) === "R");
+      const opponents = new Set(teams.filter(t => roleFor(sequences[t], round) === "O"));
       const fights = [];
 
-      function buildRoom() {
-        if (available.size === 0) {
-          schedule.push(...fights.map((f, i) => ({ round, room: i + 1, ...f })));
+      function assignReporter(remainingReporters) {
+        if (remainingReporters.length === 0) {
+          const roomOrder = shuffled(fights, random);
+          schedule.push(...roomOrder.map((f, i) => ({ round, room: i + 1, ...f })));
           if (solveRound(round + 1)) return true;
-          schedule.splice(schedule.length - fights.length, fights.length);
+          schedule.splice(schedule.length - roomOrder.length, roomOrder.length);
           return false;
         }
 
-        // Select a constrained team first: fewer valid partners = earlier choice.
-        const choices = shuffled([...available], random).map(team => {
-          const partners = [...available].filter(x => x !== team && schoolOf(x) !== schoolOf(team) && !met.has(pairKey(team, x)));
-          return { team, score: partners.length };
-        }).sort((a, b) => a.score - b.score);
-        const first = choices[0].team;
-        const partners = shuffled([...available].filter(x => x !== first && schoolOf(x) !== schoolOf(first) && !met.has(pairKey(first, x))), random);
+        const constrained = shuffled(remainingReporters, random).map(reporter => ({
+          reporter,
+          options: [...opponents].filter(opponent => schoolOf(reporter) !== schoolOf(opponent) && !met.has(pairKey(reporter, opponent)))
+        })).sort((a, b) => a.options.length - b.options.length);
 
-        for (const second of partners) {
-          const orientations = random() < .5 ? [[first, second], [second, first]] : [[second, first], [first, second]];
-          for (const [reporter, opponent] of orientations) {
-            if (reportCount[reporter] >= 2 || opposeCount[opponent] >= 2) continue;
-            // By the final round, counts cannot exceed two and must reach two.
-            const roundsLeftAfter = ROUNDS - round;
-            if (reportCount[reporter] + 1 + roundsLeftAfter < 2 || opposeCount[opponent] + 1 + roundsLeftAfter < 2) continue;
-
-            const key = pairKey(first, second);
-            available.delete(first); available.delete(second); met.add(key);
-            reportCount[reporter]++; opposeCount[opponent]++;
-            fights.push({ reporter, opponent });
-
-            if (buildRoom()) return true;
-
-            fights.pop(); reportCount[reporter]--; opposeCount[opponent]--;
-            met.delete(key); available.add(first); available.add(second);
-          }
+        const choice = constrained[0];
+        if (!choice || choice.options.length === 0) return false;
+        for (const opponent of shuffled(choice.options, random)) {
+          const key = pairKey(choice.reporter, opponent);
+          opponents.delete(opponent); met.add(key);
+          fights.push({ reporter: choice.reporter, opponent });
+          const next = remainingReporters.filter(t => t !== choice.reporter);
+          if (assignReporter(next)) return true;
+          fights.pop(); met.delete(key); opponents.add(opponent);
         }
         return false;
       }
 
-      return buildRoom();
+      return assignReporter(reporters);
     }
 
-    const ok = solveRound(1);
-    if (!ok) return null;
-    const verification = verify(schedule, teams);
-    return verification.valid ? schedule : null;
+    if (!solveRound(1)) return null;
+    const verification = verify(schedule, teams, sequences);
+    return verification.valid ? { matrix: schedule, sequences } : null;
   }
 
-  function verify(schedule, teams) {
+  function verify(schedule, teams, sequences) {
     const problems = [];
-    const rc = Object.fromEntries(teams.map(t => [t, 0]));
-    const oc = Object.fromEntries(teams.map(t => [t, 0]));
     const pairs = new Set();
     const perRound = new Map();
+    const actualRoles = Object.fromEntries(teams.map(t => [t, []]));
 
     for (const f of schedule) {
-      rc[f.reporter]++; oc[f.opponent]++;
+      actualRoles[f.reporter][f.round - 1] = "R";
+      actualRoles[f.opponent][f.round - 1] = "O";
       if (schoolOf(f.reporter) === schoolOf(f.opponent)) problems.push(`Same-school fight: ${f.reporter} vs ${f.opponent}`);
       const p = pairKey(f.reporter, f.opponent);
       if (pairs.has(p)) problems.push(`Repeated pairing: ${f.reporter} / ${f.opponent}`);
@@ -124,22 +115,30 @@ const SYPTMatrix = (() => {
         perRound.get(f.round).add(t);
       }
     }
+
     teams.forEach(t => {
-      if (rc[t] !== 2) problems.push(`${t} is Reporter ${rc[t]} times, expected 2.`);
-      if (oc[t] !== 2) problems.push(`${t} is Opponent ${oc[t]} times, expected 2.`);
+      const actual = actualRoles[t].join("");
+      const expected = sequences[t];
+      if (actual !== expected) problems.push(`${t} follows ${actual || "an incomplete sequence"}, expected ${expected}.`);
+      if (expected !== "RORO" && expected !== "OROR") problems.push(`${t} has invalid assigned sequence ${expected}.`);
     });
+    const roroCount = teams.filter(t => sequences[t] === "RORO").length;
+    if (roroCount !== teams.length / 2) problems.push(`Expected ${teams.length / 2} RORO teams, found ${roroCount}.`);
     for (let r = 1; r <= ROUNDS; r++) if ((perRound.get(r)?.size || 0) !== teams.length) problems.push(`Round ${r} is incomplete.`);
-    return { valid: problems.length === 0, problems };
+    return { valid: problems.length === 0, problems, actualRoles };
   }
 
   function generateAlternatives(teams, seed, count) {
     const outputs = [], seen = new Set();
-    for (let attempt = 0; attempt < 300 && outputs.length < count; attempt++) {
+    for (let attempt = 0; attempt < 500 && outputs.length < count; attempt++) {
       const s = `${seed}-${attempt}`;
-      const matrix = generate(teams, s);
-      if (!matrix) continue;
-      const signature = matrix.map(f => `${f.round}:${f.reporter}>${f.opponent}`).join("|");
-      if (!seen.has(signature)) { seen.add(signature); outputs.push({ seed: s, matrix, verification: verify(matrix, teams) }); }
+      const generated = generate(teams, s);
+      if (!generated) continue;
+      const signature = teams.map(t => `${t}:${generated.sequences[t]}`).join("|") + "::" + generated.matrix.map(f => `${f.round}:${f.reporter}>${f.opponent}`).join("|");
+      if (!seen.has(signature)) {
+        seen.add(signature);
+        outputs.push({ seed: s, matrix: generated.matrix, sequences: generated.sequences, verification: verify(generated.matrix, teams, generated.sequences) });
+      }
     }
     return outputs;
   }
