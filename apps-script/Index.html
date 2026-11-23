@@ -2,8 +2,1769 @@
 <html>
 <head>
   <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SYPT Fight Matrix Generator</title>
+
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #16213e;
+      background: #f4f7fb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f7fb;
+    }
+
+    .container {
+      width: min(1100px, 94%);
+      margin: 2rem auto;
+    }
+
+    header {
+      margin-bottom: 1.25rem;
+    }
+
+    h1 {
+      margin-bottom: .25rem;
+      color: #8c1d40;
+    }
+
+    h2, h3 {
+      margin-top: 0;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #dce3ed;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+
+    fieldset {
+      border: 0;
+      padding: 0;
+      margin: .5rem 0 1rem;
+    }
+
+    legend {
+      font-weight: 700;
+      margin-bottom: .65rem;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    .team-count-options {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .team-count-options legend {
+      width: 100%;
+    }
+
+    .radio-option {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      cursor: pointer;
+    }
+
+    .radio-option input[type="radio"] {
+      width: auto;
+      margin: 0;
+    }
+
+    textarea, input, select {
+      width: 100%;
+      padding: .7rem;
+      margin-top: .35rem;
+      border: 1px solid #acb7c6;
+      border-radius: 7px;
+      font: inherit;
+      background: white;
+      color: inherit;
+    }
+
+    textarea {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      resize: vertical;
+    }
+
+    .hint {
+      color: #5d6878;
+      font-size: .9rem;
+    }
+
+    .hint.compact {
+      margin: .35rem 0 0;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 1rem;
+      margin-top: 1rem;
+      align-items: start;
+    }
+
+    .actions {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    button {
+      border: 0;
+      border-radius: 7px;
+      padding: .75rem 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: #8c1d40;
+      color: white;
+    }
+
+    button.secondary {
+      background: #34495e;
+    }
+
+    button:hover {
+      filter: brightness(.95);
+    }
+
+    button:focus,
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: 3px solid #f0bd3a;
+      outline-offset: 2px;
+    }
+
+    .message {
+      margin-top: 1rem;
+      min-height: 1.25rem;
+    }
+
+    .message.error {
+      color: #b42318;
+      font-weight: 700;
+    }
+
+    .message.ok {
+      color: #137333;
+      font-weight: 700;
+    }
+
+    .matrix-head {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: #e7f6ec;
+      color: #137333;
+      border-radius: 999px;
+      padding: .35rem .65rem;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: .75rem;
+    }
+
+    th, td {
+      border: 1px solid #dce3ed;
+      padding: .55rem .65rem;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f3f7;
+    }
+
+    .validation {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: .35rem .8rem;
+      margin-top: 1rem;
+    }
+
+    .validation span {
+      color: #137333;
+    }
+
+    .matrix-actions {
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 650px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      .team-count-options {
+        flex-direction: column;
+        gap: .75rem;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .controls,
+      header p,
+      .matrix-actions {
+        display: none !important;
+      }
+
+      .container {
+        width: 100%;
+        margin: 0;
+      }
+
+      .card {
+        break-inside: avoid;
+        box-shadow: none;
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <h1>SYPT Fight Matrix Generator</h1>
+
+<main class="container">
+
+  <header>
+    <h1>SYPT Fight Matrix Generator</h1>
+    <p>
+      Generate and verify 4-round fight matrices
+      for 8-team or 10-team finals.
+    </p>
+  </header>
+
+  <section class="card controls">
+
+    <h2>Event setup</h2>
+
+    <fieldset class="team-count-options">
+
+      <legend>Number of teams</legend>
+
+      <label class="radio-option">
+        <input
+          type="radio"
+          name="teamCount"
+          value="8"
+          checked>
+        <span>8 teams (4 rooms)</span>
+      </label>
+
+      <label class="radio-option">
+        <input
+          type="radio"
+          name="teamCount"
+          value="10">
+        <span>10 teams (5 rooms)</span>
+      </label>
+
+    </fieldset>
+
+    <label for="teams">
+      Teams, one per line. Format: school_teamnumber
+    </label>
+
+    <textarea
+      id="teams"
+      rows="10"
+      spellcheck="false">SchoolA_1
+SchoolA_2
+SchoolB_1
+SchoolB_2
+SchoolC_1
+SchoolD_1
+SchoolE_1
+SchoolF_1</textarea>
+
+    <p class="hint">
+      Examples: HCI_1, HCI_2, RI_1.
+      A maximum of two teams from the same school is allowed.
+    </p>
+
+    <div class="row">
+
+      <div>
+
+        <label for="seed">
+          Seed / Matrix ID
+        </label>
+
+        <input
+          id="seed"
+          type="text"
+          maxlength="60">
+
+        <p class="hint compact">
+          Automatically uses the following event year because
+          matrices are prepared near year-end.
+          You may edit it.
+        </p>
+
+      </div>
+
+      <div>
+
+        <label for="alternatives">
+          Alternatives
+        </label>
+
+        <select id="alternatives">
+          <option value="1">1</option>
+          <option value="3" selected>3</option>
+          <option value="5">5</option>
+        </select>
+
+      </div>
+
+    </div>
+
+    <div
+      id="message"
+      class="message"
+      aria-live="polite">
+    </div>
+
+    <div class="actions">
+
+      <button
+        id="generate"
+        type="button">
+        Generate Fight Matrices
+      </button>
+
+      <button
+        id="print"
+        type="button"
+        class="secondary">
+        Print / Save PDF
+      </button>
+
+    </div>
+
+  </section>
+
+  <section
+    id="results"
+    aria-live="polite">
+  </section>
+
+</main>
+
+
+<script>
+
+"use strict";
+
+/* =========================================================
+   SYPT FIGHT MATRIX ENGINE
+   ========================================================= */
+
+const SYPTMatrix = (() => {
+
+  const ROUNDS = 4;
+
+  function schoolOf(team) {
+
+    const i = team.lastIndexOf("_");
+
+    return i > 0
+      ? team.slice(0, i).trim().toLowerCase()
+      : "";
+  }
+
+
+  function validateTeams(teams, expected) {
+
+    const errors = [];
+
+    if (teams.length !== expected) {
+      errors.push(
+        `Enter exactly ${expected} teams.`
+      );
+    }
+
+
+    if (
+      new Set(
+        teams.map(t => t.toLowerCase())
+      ).size !== teams.length
+    ) {
+
+      errors.push(
+        "Team identifiers must be unique."
+      );
+    }
+
+
+    const pattern = /^.+_[1-9]\d*$/;
+
+    teams.forEach(team => {
+
+      if (!pattern.test(team)) {
+
+        errors.push(
+          `Invalid team identifier: ${team}. ` +
+          `Use school_teamnumber, e.g. HCI_1.`
+        );
+      }
+
+    });
+
+
+    const schoolCounts = new Map();
+
+    teams.forEach(team => {
+
+      const school = schoolOf(team);
+
+      schoolCounts.set(
+        school,
+        (schoolCounts.get(school) || 0) + 1
+      );
+
+    });
+
+
+    schoolCounts.forEach((count, school) => {
+
+      if (count > 2) {
+
+        errors.push(
+          `School ${school} has ${count} teams; maximum is 2.`
+        );
+      }
+
+    });
+
+
+    return [...new Set(errors)];
+  }
+
+
+  function hashSeed(text) {
+
+    let hash = 2166136261 >>> 0;
+
+    for (
+      let i = 0;
+      i < text.length;
+      i++
+    ) {
+
+      hash ^= text.charCodeAt(i);
+
+      hash =
+        Math.imul(hash, 16777619);
+    }
+
+    return hash >>> 0;
+  }
+
+
+  function rng(seedText) {
+
+    let a =
+      hashSeed(seedText) || 1;
+
+    return () => {
+
+      a |= 0;
+
+      a =
+        (a + 0x6D2B79F5) | 0;
+
+      let t =
+        Math.imul(
+          a ^ (a >>> 15),
+          1 | a
+        );
+
+      t =
+        (
+          t +
+          Math.imul(
+            t ^ (t >>> 7),
+            61 | t
+          )
+        ) ^ t;
+
+      return (
+        (t ^ (t >>> 14)) >>> 0
+      ) / 4294967296;
+    };
+  }
+
+
+  function shuffled(items, random) {
+
+    const result = [...items];
+
+    for (
+      let i = result.length - 1;
+      i > 0;
+      i--
+    ) {
+
+      const j =
+        Math.floor(
+          random() * (i + 1)
+        );
+
+      [
+        result[i],
+        result[j]
+      ] =
+      [
+        result[j],
+        result[i]
+      ];
+    }
+
+    return result;
+  }
+
+
+  function pairKey(a, b) {
+
+    return [a, b]
+      .sort()
+      .join("||");
+  }
+
+
+  function roleFor(
+    sequence,
+    round
+  ) {
+
+    return sequence.charAt(
+      round - 1
+    );
+  }
+
+
+  function generate(
+    teams,
+    seedText
+  ) {
+
+    const random =
+      rng(seedText);
+
+    const ordered =
+      shuffled(
+        teams,
+        random
+      );
+
+
+    /*
+       Exactly half RORO
+       and half OROR.
+    */
+
+    const sequences = {};
+
+    ordered.forEach(
+      (team, index) => {
+
+        sequences[team] =
+          index < teams.length / 2
+            ? "RORO"
+            : "OROR";
+      }
+    );
+
+
+    const met =
+      new Set();
+
+    const schedule = [];
+
+
+    function solveRound(round) {
+
+      if (round > ROUNDS) {
+        return true;
+      }
+
+
+      const reporters =
+        teams.filter(
+          team =>
+            roleFor(
+              sequences[team],
+              round
+            ) === "R"
+        );
+
+
+      const opponents =
+        new Set(
+          teams.filter(
+            team =>
+              roleFor(
+                sequences[team],
+                round
+              ) === "O"
+          )
+        );
+
+
+      const fights = [];
+
+
+      function assignReporter(
+        remainingReporters
+      ) {
+
+        if (
+          remainingReporters.length === 0
+        ) {
+
+          const roomOrder =
+            shuffled(
+              fights,
+              random
+            );
+
+
+          schedule.push(
+            ...roomOrder.map(
+              (fight, index) => ({
+                round,
+                room: index + 1,
+                ...fight
+              })
+            )
+          );
+
+
+          if (
+            solveRound(
+              round + 1
+            )
+          ) {
+            return true;
+          }
+
+
+          schedule.splice(
+            schedule.length -
+              roomOrder.length,
+            roomOrder.length
+          );
+
+
+          return false;
+        }
+
+
+        /*
+         Choose the reporter
+         with the fewest valid
+         opponent options first.
+        */
+
+        const constrained =
+          shuffled(
+            remainingReporters,
+            random
+          )
+          .map(reporter => ({
+
+            reporter,
+
+            options:
+              [...opponents]
+              .filter(opponent =>
+
+                schoolOf(reporter)
+                  !==
+                schoolOf(opponent)
+
+                &&
+
+                !met.has(
+                  pairKey(
+                    reporter,
+                    opponent
+                  )
+                )
+
+              )
+          }))
+          .sort(
+            (a, b) =>
+              a.options.length -
+              b.options.length
+          );
+
+
+        const choice =
+          constrained[0];
+
+
+        if (
+          !choice ||
+          choice.options.length === 0
+        ) {
+
+          return false;
+        }
+
+
+        for (
+          const opponent
+          of shuffled(
+            choice.options,
+            random
+          )
+        ) {
+
+          const key =
+            pairKey(
+              choice.reporter,
+              opponent
+            );
+
+
+          opponents.delete(
+            opponent
+          );
+
+          met.add(key);
+
+
+          fights.push({
+            reporter:
+              choice.reporter,
+            opponent
+          });
+
+
+          const next =
+            remainingReporters.filter(
+              team =>
+                team !==
+                choice.reporter
+            );
+
+
+          if (
+            assignReporter(next)
+          ) {
+
+            return true;
+          }
+
+
+          fights.pop();
+
+          met.delete(key);
+
+          opponents.add(
+            opponent
+          );
+        }
+
+
+        return false;
+      }
+
+
+      return assignReporter(
+        reporters
+      );
+    }
+
+
+    if (!solveRound(1)) {
+      return null;
+    }
+
+
+    const verification =
+      verify(
+        schedule,
+        teams,
+        sequences
+      );
+
+
+    return verification.valid
+      ? {
+          matrix: schedule,
+          sequences
+        }
+      : null;
+  }
+
+
+  function verify(
+    schedule,
+    teams,
+    sequences
+  ) {
+
+    const problems = [];
+
+    const pairs =
+      new Set();
+
+    const perRound =
+      new Map();
+
+
+    const actualRoles =
+      Object.fromEntries(
+        teams.map(
+          team => [
+            team,
+            []
+          ]
+        )
+      );
+
+
+    for (
+      const fight
+      of schedule
+    ) {
+
+      actualRoles[
+        fight.reporter
+      ][fight.round - 1] =
+        "R";
+
+
+      actualRoles[
+        fight.opponent
+      ][fight.round - 1] =
+        "O";
+
+
+      if (
+        schoolOf(
+          fight.reporter
+        )
+          ===
+        schoolOf(
+          fight.opponent
+        )
+      ) {
+
+        problems.push(
+          `Same-school fight: ` +
+          `${fight.reporter} vs ` +
+          `${fight.opponent}`
+        );
+      }
+
+
+      const pair =
+        pairKey(
+          fight.reporter,
+          fight.opponent
+        );
+
+
+      if (
+        pairs.has(pair)
+      ) {
+
+        problems.push(
+          `Repeated pairing: ` +
+          `${fight.reporter} / ` +
+          `${fight.opponent}`
+        );
+      }
+
+
+      pairs.add(pair);
+
+
+      if (
+        !perRound.has(
+          fight.round
+        )
+      ) {
+
+        perRound.set(
+          fight.round,
+          new Set()
+        );
+      }
+
+
+      for (
+        const team
+        of [
+          fight.reporter,
+          fight.opponent
+        ]
+      ) {
+
+        if (
+          perRound
+            .get(fight.round)
+            .has(team)
+        ) {
+
+          problems.push(
+            `${team} appears more than once ` +
+            `in round ${fight.round}`
+          );
+        }
+
+
+        perRound
+          .get(fight.round)
+          .add(team);
+      }
+    }
+
+
+    teams.forEach(team => {
+
+      const actual =
+        actualRoles[team]
+          .join("");
+
+
+      const expected =
+        sequences[team];
+
+
+      if (
+        actual !== expected
+      ) {
+
+        problems.push(
+          `${team} follows ` +
+          `${actual || "an incomplete sequence"}, ` +
+          `expected ${expected}.`
+        );
+      }
+
+
+      if (
+        expected !== "RORO"
+        &&
+        expected !== "OROR"
+      ) {
+
+        problems.push(
+          `${team} has invalid ` +
+          `assigned sequence ${expected}.`
+        );
+      }
+
+    });
+
+
+    const roroCount =
+      teams.filter(
+        team =>
+          sequences[team] ===
+          "RORO"
+      ).length;
+
+
+    if (
+      roroCount !==
+      teams.length / 2
+    ) {
+
+      problems.push(
+        `Expected ` +
+        `${teams.length / 2} RORO teams, ` +
+        `found ${roroCount}.`
+      );
+    }
+
+
+    for (
+      let round = 1;
+      round <= ROUNDS;
+      round++
+    ) {
+
+      if (
+        (
+          perRound
+            .get(round)
+            ?.size || 0
+        )
+        !==
+        teams.length
+      ) {
+
+        problems.push(
+          `Round ${round} is incomplete.`
+        );
+      }
+    }
+
+
+    return {
+      valid:
+        problems.length === 0,
+
+      problems,
+      actualRoles
+    };
+  }
+
+
+  function generateAlternatives(
+    teams,
+    seed,
+    count
+  ) {
+
+    const outputs = [];
+
+    const seen =
+      new Set();
+
+
+    for (
+      let attempt = 0;
+      attempt < 500
+        && outputs.length < count;
+      attempt++
+    ) {
+
+      const matrixSeed =
+        `${seed}-${attempt}`;
+
+
+      const generated =
+        generate(
+          teams,
+          matrixSeed
+        );
+
+
+      if (!generated) {
+        continue;
+      }
+
+
+      const signature =
+        teams
+        .map(
+          team =>
+            `${team}:` +
+            `${generated.sequences[team]}`
+        )
+        .join("|")
+        +
+        "::"
+        +
+        generated.matrix
+        .map(
+          fight =>
+            `${fight.round}:` +
+            `${fight.reporter}>` +
+            `${fight.opponent}`
+        )
+        .join("|");
+
+
+      if (
+        !seen.has(signature)
+      ) {
+
+        seen.add(signature);
+
+
+        outputs.push({
+
+          seed:
+            matrixSeed,
+
+          matrix:
+            generated.matrix,
+
+          sequences:
+            generated.sequences,
+
+          verification:
+            verify(
+              generated.matrix,
+              teams,
+              generated.sequences
+            )
+
+        });
+      }
+    }
+
+
+    return outputs;
+  }
+
+
+  return {
+    schoolOf,
+    validateTeams,
+    generateAlternatives,
+    verify
+  };
+
+})();
+
+
+/* =========================================================
+   USER INTERFACE
+   ========================================================= */
+
+(() => {
+
+  const teamsEl =
+    document.getElementById(
+      "teams"
+    );
+
+  const seedEl =
+    document.getElementById(
+      "seed"
+    );
+
+  const alternativesEl =
+    document.getElementById(
+      "alternatives"
+    );
+
+  const messageEl =
+    document.getElementById(
+      "message"
+    );
+
+  const resultsEl =
+    document.getElementById(
+      "results"
+    );
+
+
+  const example8 = [
+    "SchoolA_1",
+    "SchoolA_2",
+    "SchoolB_1",
+    "SchoolB_2",
+    "SchoolC_1",
+    "SchoolD_1",
+    "SchoolE_1",
+    "SchoolF_1"
+  ];
+
+
+  const example10 = [
+    ...example8,
+    "SchoolG_1",
+    "SchoolH_1"
+  ];
+
+
+  function defaultMatrixId() {
+
+    /*
+       SYPT matrix is normally
+       prepared near year-end
+       for the following year's
+       competition.
+    */
+
+    const eventYear =
+      new Date()
+        .getFullYear()
+      + 1;
+
+
+    return (
+      `SYPT-${eventYear}`
+    );
+  }
+
+
+  seedEl.value =
+    defaultMatrixId();
+
+
+  function teamCount() {
+
+    return Number(
+      document.querySelector(
+        'input[name="teamCount"]:checked'
+      ).value
+    );
+  }
+
+
+  function teams() {
+
+    return teamsEl.value
+      .split(/\r?\n/)
+      .map(
+        value =>
+          value.trim()
+      )
+      .filter(Boolean);
+  }
+
+
+  function escapeHtml(value) {
+
+    return String(value)
+      .replace(
+        /[&<>"']/g,
+        character => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[character]
+      );
+  }
+
+
+  document
+    .querySelectorAll(
+      'input[name="teamCount"]'
+    )
+    .forEach(
+      radio =>
+        radio.addEventListener(
+          "change",
+          () => {
+
+            const current =
+              teams();
+
+
+            if (
+              current.join("\n")
+                ===
+              example8.join("\n")
+              ||
+              current.join("\n")
+                ===
+              example10.join("\n")
+            ) {
+
+              teamsEl.value =
+                (
+                  teamCount() === 8
+                    ? example8
+                    : example10
+                )
+                .join("\n");
+            }
+
+
+            resultsEl.innerHTML =
+              "";
+
+            messageEl.textContent =
+              "";
+
+          }
+        )
+    );
+
+
+  document
+    .getElementById(
+      "generate"
+    )
+    .addEventListener(
+      "click",
+      () => {
+
+        const list =
+          teams();
+
+
+        const errors =
+          SYPTMatrix
+            .validateTeams(
+              list,
+              teamCount()
+            );
+
+
+        resultsEl.innerHTML =
+          "";
+
+
+        if (
+          errors.length
+        ) {
+
+          messageEl.className =
+            "message error";
+
+          messageEl.innerHTML =
+            errors
+              .map(escapeHtml)
+              .join("<br>");
+
+          return;
+        }
+
+
+        const baseSeed =
+          seedEl.value.trim()
+          ||
+          defaultMatrixId();
+
+
+        seedEl.value =
+          baseSeed;
+
+
+        const wanted =
+          Number(
+            alternativesEl.value
+          );
+
+
+        const generated =
+          SYPTMatrix
+            .generateAlternatives(
+              list,
+              baseSeed,
+              wanted
+            );
+
+
+        if (
+          !generated.length
+        ) {
+
+          messageEl.className =
+            "message error";
+
+          messageEl.textContent =
+            "No valid matrix was found. " +
+            "Check the team/school combination " +
+            "or change the Matrix ID and try again.";
+
+          return;
+        }
+
+
+        messageEl.className =
+          generated.length === wanted
+            ? "message ok"
+            : "message error";
+
+
+        messageEl.textContent =
+          generated.length === wanted
+            ? `${generated.length} valid matrix option(s) generated.`
+            : `Only ${generated.length} distinct valid matrix option(s) were found.`;
+
+
+        generated.forEach(
+          (matrix, index) => {
+
+            resultsEl.appendChild(
+              renderMatrix(
+                matrix,
+                index + 1
+              )
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  document
+    .getElementById(
+      "print"
+    )
+    .addEventListener(
+      "click",
+      () =>
+        window.print()
+    );
+
+
+  function renderMatrix(
+    result,
+    number
+  ) {
+
+    const section =
+      document.createElement(
+        "section"
+      );
+
+    section.className =
+      "card";
+
+
+    const heading =
+      document.createElement(
+        "div"
+      );
+
+    heading.className =
+      "matrix-head";
+
+    heading.innerHTML =
+      `<h2>Matrix ${number}</h2>` +
+      `<span class="badge">` +
+      `✓ VALID MATRIX` +
+      `</span>`;
+
+    section.appendChild(
+      heading
+    );
+
+
+    const id =
+      document.createElement(
+        "p"
+      );
+
+    id.innerHTML =
+      `<strong>Matrix ID:</strong> ` +
+      escapeHtml(
+        result.seed
+      );
+
+    section.appendChild(id);
+
+
+    const sequenceWrap =
+      document.createElement(
+        "div"
+      );
+
+    sequenceWrap.className =
+      "table-wrap";
+
+
+    let sequenceHtml =
+      "<h3>Team role sequences</h3>" +
+      "<table>" +
+      "<thead>" +
+      "<tr>" +
+      "<th>Team</th>" +
+      "<th>Sequence</th>" +
+      "</tr>" +
+      "</thead>" +
+      "<tbody>";
+
+
+    Object
+      .entries(
+        result.sequences
+      )
+      .sort(
+        ([a], [b]) =>
+          a.localeCompare(b)
+      )
+      .forEach(
+        ([team, sequence]) => {
+
+          sequenceHtml +=
+            "<tr>" +
+            `<td>${escapeHtml(team)}</td>` +
+            `<td><strong>${sequence}</strong></td>` +
+            "</tr>";
+
+        }
+      );
+
+
+    sequenceHtml +=
+      "</tbody></table>";
+
+
+    sequenceWrap.innerHTML =
+      sequenceHtml;
+
+    section.appendChild(
+      sequenceWrap
+    );
+
+
+    const tableWrap =
+      document.createElement(
+        "div"
+      );
+
+    tableWrap.className =
+      "table-wrap";
+
+
+    let matrixHtml =
+      "<h3>Fight matrix</h3>" +
+      "<table>" +
+      "<thead>" +
+      "<tr>" +
+      "<th>Round</th>" +
+      "<th>Room</th>" +
+      "<th>Reporter</th>" +
+      "<th>Opponent</th>" +
+      "</tr>" +
+      "</thead>" +
+      "<tbody>";
+
+
+    result.matrix
+      .forEach(fight => {
+
+        matrixHtml +=
+          "<tr>" +
+          `<td>${fight.round}</td>` +
+          `<td>${fight.room}</td>` +
+          `<td>${escapeHtml(fight.reporter)}</td>` +
+          `<td>${escapeHtml(fight.opponent)}</td>` +
+          "</tr>";
+
+      });
+
+
+    matrixHtml +=
+      "</tbody></table>";
+
+
+    tableWrap.innerHTML =
+      matrixHtml;
+
+    section.appendChild(
+      tableWrap
+    );
+
+
+    const validation =
+      document.createElement(
+        "div"
+      );
+
+    validation.className =
+      "validation";
+
+
+    [
+      "Every team follows RORO or OROR",
+      "Equal numbers assigned to each sequence",
+      "All teams appear once per round",
+      "No repeated pairings",
+      "No same-school encounters",
+      "All fights assigned"
+    ]
+    .forEach(text => {
+
+      const item =
+        document.createElement(
+          "span"
+        );
+
+      item.textContent =
+        `✓ ${text}`;
+
+      validation.appendChild(
+        item
+      );
+
+    });
+
+
+    section.appendChild(
+      validation
+    );
+
+
+    const actions =
+      document.createElement(
+        "div"
+      );
+
+    actions.className =
+      "matrix-actions";
+
+
+    const csvButton =
+      document.createElement(
+        "button"
+      );
+
+    csvButton.type =
+      "button";
+
+    csvButton.className =
+      "secondary";
+
+    csvButton.textContent =
+      "Download CSV";
+
+
+    csvButton.addEventListener(
+      "click",
+      () =>
+        downloadCSV(
+          result.matrix,
+          result.sequences,
+          result.seed
+        )
+    );
+
+
+    actions.appendChild(
+      csvButton
+    );
+
+    section.appendChild(
+      actions
+    );
+
+
+    return section;
+  }
+
+
+  function downloadCSV(
+    matrix,
+    sequences,
+    seed
+  ) {
+
+    const rows = [[
+      "Round",
+      "Room",
+      "Reporter",
+      "Reporter Sequence",
+      "Opponent",
+      "Opponent Sequence"
+    ]];
+
+
+    matrix.forEach(
+      fight => {
+
+        rows.push([
+          fight.round,
+          fight.room,
+          fight.reporter,
+          sequences[
+            fight.reporter
+          ],
+          fight.opponent,
+          sequences[
+            fight.opponent
+          ]
+        ]);
+
+      }
+    );
+
+
+    const csv =
+      rows
+      .map(
+        row =>
+          row.map(
+            value =>
+              `"${String(value)
+                .replaceAll(
+                  '"',
+                  '""'
+                )}"`
+          )
+          .join(",")
+      )
+      .join("\r\n");
+
+
+    const blob =
+      new Blob(
+        [csv],
+        {
+          type:
+            "text/csv;charset=utf-8"
+        }
+      );
+
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+
+    link.href =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    link.download =
+      `${seed}.csv`;
+
+
+    document.body
+      .appendChild(
+        link
+      );
+
+
+    link.click();
+
+
+    URL.revokeObjectURL(
+      link.href
+    );
+
+
+    link.remove();
+  }
+
+})();
+
+</script>
+
 </body>
 </html>
