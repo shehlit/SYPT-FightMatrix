@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SYPT Fight Matrix Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>SYPT Fight Matrix Generator</h1>
+      <p>Generate and verify 4-round fight matrices for 8-team or 10-team finals.</p>
+    </header>
+
+    <section class="card controls">
+      <h2>1. Event setup</h2>
+      <fieldset>
+        <legend>Number of teams</legend>
+        <label><input type="radio" name="teamCount" value="8" checked> 8 teams (4 rooms)</label>
+        <label><input type="radio" name="teamCount" value="10"> 10 teams (5 rooms)</label>
+      </fieldset>
+
+      <label for="teams">Teams, one per line. Format: school_teamnumber</label>
+      <textarea id="teams" rows="10" spellcheck="false">SchoolA_1
+SchoolA_2
+SchoolB_1
+SchoolB_2
+SchoolC_1
+SchoolD_1
+SchoolE_1
+SchoolF_1</textarea>
+      <p class="hint">Examples: HCI_1, HCI_2, RI_1. A maximum of two teams from the same school is allowed.</p>
+
+      <div class="row">
+        <label for="seed">Seed / Matrix ID</label>
+        <input id="seed" type="text" value="SYPT-2026" maxlength="60">
+        <label for="alternatives">Alternatives</label>
+        <select id="alternatives">
+          <option value="1">1</option>
+          <option value="3" selected>3</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+
+      <div id="message" class="message" aria-live="polite"></div>
+      <div class="actions">
+        <button id="generate" type="button">Generate Fight Matrices</button>
+        <button id="print" type="button" class="secondary">Print / Save PDF</button>
+      </div>
+    </section>
+
+    <section id="results" aria-live="polite"></section>
+  </main>
+
+  <script src="fightmatrix.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
