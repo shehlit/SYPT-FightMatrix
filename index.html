@@ -3,65 +3,177 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests">
+
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests">
+
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=()">
+
+  <meta http-equiv="Permissions-Policy"
+        content="camera=(), microphone=(), geolocation=(), payment=(), usb=()">
+
   <title>SYPT Fight Matrix Generator</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
   <main class="container">
+
     <header>
       <h1>SYPT Fight Matrix Generator</h1>
-      <p>Generate and verify 4-round fight matrices for 8-team or 10-team finals.</p>
+      <p>
+        Generate and verify 4-round fight matrices
+        for 8-team or 10-team finals.
+      </p>
     </header>
 
     <section class="card controls">
+
       <h2>Event setup</h2>
+
       <fieldset class="team-count-options">
+
         <legend>Number of teams</legend>
-        <label class="radio-option"><input type="radio" name="teamCount" value="8" checked><span>8 teams (4 rooms)</span></label>
-        <label class="radio-option"><input type="radio" name="teamCount" value="10"><span>10 teams (5 rooms)</span></label>
+
+        <label class="radio-option">
+          <input
+            type="radio"
+            name="teamCount"
+            value="8"
+            checked>
+          <span>8 teams (4 rooms)</span>
+        </label>
+
+        <label class="radio-option">
+          <input
+            type="radio"
+            name="teamCount"
+            value="10">
+          <span>10 teams (5 rooms)</span>
+        </label>
+
       </fieldset>
 
-      <label for="teams">Teams, one per line. Format: school_teamnumber</label>
-      <textarea id="teams" rows="10" spellcheck="false">SchoolA_1
+      <label for="teams">
+        Teams, one per line. Format: school_teamnumber
+      </label>
+
+      <textarea
+        id="teams"
+        rows="10"
+        spellcheck="false">SchoolA_1
 SchoolA_2
 SchoolB_1
 SchoolB_2
 SchoolC_1
+SchoolC_2
 SchoolD_1
-SchoolE_1
-SchoolF_1</textarea>
-      <p class="hint">Examples: HCI_1, HCI_2, RI_1. A maximum of two teams from the same school is allowed.</p>
+SchoolD_2</textarea>
+
+      <p class="hint">
+        Examples: HCI_1, HCI_2, RI_1.
+        A maximum of two teams from the same school is allowed.
+      </p>
+
+      <div
+        class="card"
+        style="
+          background:#f7f1f4;
+          border-left:4px solid #8c1d40;
+          box-shadow:none;
+          padding:.8rem 1rem;
+        ">
+
+        <strong>Balanced role rule</strong>
+
+        <p style="margin:.35rem 0 0;">
+          Each team is Reporter once and Opponent once in
+          Rounds 1-2, and again once in each role in Rounds 3-4.
+        </p>
+
+        <p style="margin:.35rem 0 0;">
+          Allowed sequences:
+          <strong>RORO, ROOR, ORRO, OROR</strong>.
+        </p>
+
+      </div>
 
       <div class="row">
+
         <div class="field-group">
-          <label for="seed">Seed / Matrix ID</label>
-          <input id="seed" type="text" maxlength="60" aria-describedby="seedHint">
-          <p id="seedHint" class="hint compact">Automatically uses the following event year because matrices are prepared near year-end. You may edit it.</p>
+
+          <label for="seed">
+            Seed / Matrix ID
+          </label>
+
+          <input
+            id="seed"
+            type="text"
+            maxlength="60"
+            aria-describedby="seedHint">
+
+          <p
+            id="seedHint"
+            class="hint compact">
+            Automatically uses the following event year because
+            matrices are prepared near year-end.
+            You may edit it.
+          </p>
+
         </div>
+
         <div class="field-group">
-          <label for="alternatives">Alternatives</label>
+
+          <label for="alternatives">
+            Alternatives
+          </label>
+
           <select id="alternatives">
             <option value="1">1</option>
             <option value="3" selected>3</option>
             <option value="5">5</option>
           </select>
+
         </div>
+
       </div>
 
-      <div id="message" class="message" aria-live="polite"></div>
-      <div class="actions">
-        <button id="generate" type="button">Generate Fight Matrices</button>
-        <button id="print" type="button" class="secondary">Print / Save PDF</button>
+      <div
+        id="message"
+        class="message"
+        aria-live="polite">
       </div>
+
+      <div class="actions">
+
+        <button
+          id="generate"
+          type="button">
+          Generate Fight Matrices
+        </button>
+
+        <button
+          id="print"
+          type="button"
+          class="secondary">
+          Print / Save PDF
+        </button>
+
+      </div>
+
     </section>
 
-    <section id="results" aria-live="polite"></section>
+    <section
+      id="results"
+      aria-live="polite">
+    </section>
+
   </main>
 
   <script src="fightmatrix.js"></script>
   <script src="app.js"></script>
+
 </body>
 </html>
